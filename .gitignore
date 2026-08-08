@@ -1,0 +1,33 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (if any added later)
+node_modules/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Build output (if any)
+dist/
+build/
+
+# Qodo / AI assistant files
+.qodo/
+.gemini/

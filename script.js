@@ -1,3 +1,183 @@
+/* ============================================================
+   CalcSuite — script.js
+   Standard Calculator + Unit Converter logic
+   ============================================================ */
+
+/* ===== TAB SWITCHING ===== */
+function switchTab(tab) {
+  document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.remove('hidden');
+}
+
+/* ===== STANDARD CALCULATOR ===== */
+let calcState = {
+  expression: '',   // full expression string (e.g. "12+3*")
+  display: '0',     // what's shown large on screen
+  justEvaled: false // did we just press =?
+};
+
+function calcInput(val) {
+  const s = calcState;
+  const ops = ['+', '-', '*', '/'];
+
+  if (s.justEvaled) {
+    // If user types a number after =, start fresh; if operator, chain
+    if (!ops.includes(val)) {
+      s.expression = '';
+      s.display = '0';
+    }
+    s.justEvaled = false;
+  }
+
+  if (ops.includes(val)) {
+    // Replace trailing operator if any
+    if (s.expression && ops.includes(s.expression.slice(-1))) {
+      s.expression = s.expression.slice(0, -1);
+    }
+    // Append current display to expression if needed
+    if (!s.expression || ops.includes(s.expression.slice(-1))) {
+      s.expression += (s.display === '0' ? '0' : s.display);
+    }
+    s.expression += val;
+    s.display = '0';
+  } else if (val === '.') {
+    if (!s.display.includes('.')) s.display += '.';
+  } else {
+    // digit
+    if (s.display === '0') s.display = val;
+    else s.display += val;
+  }
+
+  renderCalc();
+}
+
+function calcFn(fn) {
+  const s = calcState;
+  let num = parseFloat(s.display);
+
+  if (fn === 'clear') {
+    s.expression = '';
+    s.display = '0';
+    s.justEvaled = false;
+    document.getElementById('calcHistory').textContent = '';
+    renderCalc();
+    return;
+  }
+  if (fn === 'backspace') {
+    if (s.justEvaled) { s.expression = ''; s.display = '0'; s.justEvaled = false; }
+    else if (s.display.length > 1) s.display = s.display.slice(0, -1);
+    else s.display = '0';
+    renderCalc();
+    return;
+  }
+  if (fn === 'percent') {
+    s.display = String(parseFloat((num / 100).toPrecision(12)));
+    renderCalc();
+    return;
+  }
+  if (fn === 'sqrt') {
+    if (num < 0) { s.display = 'Error'; renderCalc(); return; }
+    const res = Math.sqrt(num);
+    document.getElementById('calcHistory').textContent = `√(${num}) = ${formatCalcNum(res)}`;
+    s.expression = '';
+    s.display = String(parseFloat(res.toPrecision(12)));
+    s.justEvaled = true;
+    renderCalc();
+    return;
+  }
+  if (fn === 'square') {
+    const res = num * num;
+    document.getElementById('calcHistory').textContent = `(${num})² = ${formatCalcNum(res)}`;
+    s.expression = '';
+    s.display = String(parseFloat(res.toPrecision(12)));
+    s.justEvaled = true;
+    renderCalc();
+    return;
+  }
+  if (fn === 'sin') { evalTrig('sin', num); return; }
+  if (fn === 'cos') { evalTrig('cos', num); return; }
+  if (fn === 'tan') { evalTrig('tan', num); return; }
+  if (fn === 'equals') {
+    // Build full expression
+    let ops = ['+', '-', '*', '/'];
+    let expr = s.expression;
+    if (!ops.includes(expr.slice(-1))) {
+      // expression already complete or empty
+      expr += (s.display !== '0' || !s.expression) ? (s.expression ? '' : s.display) : '';
+    } else {
+      expr += s.display;
+    }
+    if (!expr) { expr = s.display; }
+    try {
+      // safe eval using Function
+      const raw = new Function('return ' + expr)();
+      const result = parseFloat(raw.toPrecision(12));
+      document.getElementById('calcHistory').textContent = `${expr} = ${formatCalcNum(result)}`;
+      s.expression = '';
+      s.display = isFinite(result) ? String(result) : 'Error';
+      s.justEvaled = true;
+    } catch {
+      s.display = 'Error';
+    }
+    renderCalc();
+  }
+}
+
+function evalTrig(fn, deg) {
+  const s = calcState;
+  const rad = deg * Math.PI / 180;
+  const map = { sin: Math.sin, cos: Math.cos, tan: Math.tan };
+  let res = map[fn](rad);
+  // Round near-zero
+  if (Math.abs(res) < 1e-10) res = 0;
+  res = parseFloat(res.toPrecision(10));
+  document.getElementById('calcHistory').textContent = `${fn}(${deg}°) = ${formatCalcNum(res)}`;
+  s.expression = '';
+  s.display = String(res);
+  s.justEvaled = true;
+  renderCalc();
+}
+
+function formatCalcNum(n) {
+  if (!isFinite(n)) return 'Error';
+  if (Math.abs(n) >= 1e12 || (Math.abs(n) < 1e-6 && n !== 0)) return n.toExponential(4);
+  return n.toLocaleString('en-US', { maximumFractionDigits: 10 });
+}
+
+function renderCalc() {
+  const s = calcState;
+  const exprEl = document.getElementById('calcExpression');
+  const resEl  = document.getElementById('calcResult');
+
+  // Build readable expression preview
+  const ops = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+  const prettyExpr = s.expression.replace(/[+\-*/]/g, m => ` ${ops[m] || m} `);
+  exprEl.textContent = prettyExpr || '\u00a0';
+
+  resEl.textContent = s.display === 'Error' ? 'Error' : formatCalcNum(parseFloat(s.display)) || s.display;
+  resEl.className = 'calc-result' + (s.display.length > 10 ? ' small' : '');
+  if (s.justEvaled) {
+    resEl.classList.add('flash');
+    setTimeout(() => resEl.classList.remove('flash'), 300);
+  }
+}
+
+// Keyboard support for calculator
+document.addEventListener('keydown', e => {
+  const panel = document.getElementById('panel-calc');
+  if (panel.classList.contains('hidden')) return;
+  if ('0123456789'.includes(e.key)) { calcInput(e.key); return; }
+  if (['+', '-', '*', '/'].includes(e.key)) { calcInput(e.key); return; }
+  if (e.key === '.') { calcInput('.'); return; }
+  if (e.key === 'Enter' || e.key === '=') { calcFn('equals'); return; }
+  if (e.key === 'Backspace') { calcFn('backspace'); return; }
+  if (e.key === 'Escape') { calcFn('clear'); return; }
+  if (e.key === '%') { calcFn('percent'); return; }
+});
+
+/* ===== UNIT CONVERTER ===== */
 const units = {
   Length: {
     icon: "fa-ruler", color: "#6c63ff",
@@ -241,6 +421,5 @@ function scrollActivePillIntoView() {
 }
 
 document.getElementById("categoryScroll").addEventListener("scroll", updateArrows);
-
 setCategory(activeCategory);
 setTimeout(updateArrows, 100);
