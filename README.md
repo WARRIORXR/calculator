@@ -2,7 +2,7 @@
 
 > **A premium, all-in-one calculator suite — Standard Calculator + 14-category Unit Converter**
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-GitHub%20Pages-6c63ff?style=for-the-badge)](https://warriorxr.github.io/calculator/)
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-Vercel-6c63ff?style=for-the-badge)](https://calculator-alpha-two-64.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f857a6?style=for-the-badge)](LICENSE)
 [![HTML](https://img.shields.io/badge/HTML5-43e97b?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS](https://img.shields.io/badge/CSS3-4facfe?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
@@ -51,7 +51,7 @@
 
 ## 🚀 Live Demo
 
-**[👉 Open CalcSuite](https://warriorxr.github.io/calculator/)**
+**[👉 Open CalcSuite](https://calculator-alpha-two-64.vercel.app/)**
 
 ---
 
