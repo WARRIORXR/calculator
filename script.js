@@ -1,6 +1,6 @@
 /* ============================================================
    CalcSuite — script.js
-   Standard Calculator + Unit Converter logic
+   Standard + Scientific + Programmer Calculators + Unit Converter
    ============================================================ */
 
 /* ===== TAB SWITCHING ===== */
@@ -9,134 +9,98 @@ function switchTab(tab) {
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.remove('hidden');
+  if (tab === 'prog') renderProgCalc();
 }
 
-/* ===== STANDARD CALCULATOR ===== */
+/* ============================================================
+   STANDARD CALCULATOR
+   ============================================================ */
 let calcState = {
-  expression: '',   // full expression string (e.g. "12+3*")
-  display: '0',     // what's shown large on screen
-  justEvaled: false // did we just press =?
+  expression: '',
+  display: '0',
+  justEvaled: false
 };
 
 function calcInput(val) {
   const s = calcState;
   const ops = ['+', '-', '*', '/'];
-
   if (s.justEvaled) {
-    // If user types a number after =, start fresh; if operator, chain
-    if (!ops.includes(val)) {
-      s.expression = '';
-      s.display = '0';
-    }
+    if (!ops.includes(val)) { s.expression = ''; s.display = '0'; }
     s.justEvaled = false;
   }
-
   if (ops.includes(val)) {
-    // Replace trailing operator if any
-    if (s.expression && ops.includes(s.expression.slice(-1))) {
-      s.expression = s.expression.slice(0, -1);
-    }
-    // Append current display to expression if needed
-    if (!s.expression || ops.includes(s.expression.slice(-1))) {
-      s.expression += (s.display === '0' ? '0' : s.display);
-    }
+    if (s.expression && ops.includes(s.expression.slice(-1))) s.expression = s.expression.slice(0, -1);
+    if (!s.expression || ops.includes(s.expression.slice(-1))) s.expression += (s.display === '0' ? '0' : s.display);
     s.expression += val;
     s.display = '0';
   } else if (val === '.') {
     if (!s.display.includes('.')) s.display += '.';
   } else {
-    // digit
     if (s.display === '0') s.display = val;
     else s.display += val;
   }
-
   renderCalc();
 }
 
 function calcFn(fn) {
   const s = calcState;
   let num = parseFloat(s.display);
-
   if (fn === 'clear') {
-    s.expression = '';
-    s.display = '0';
-    s.justEvaled = false;
+    s.expression = ''; s.display = '0'; s.justEvaled = false;
     document.getElementById('calcHistory').textContent = '';
-    renderCalc();
-    return;
+    renderCalc(); return;
   }
   if (fn === 'backspace') {
     if (s.justEvaled) { s.expression = ''; s.display = '0'; s.justEvaled = false; }
     else if (s.display.length > 1) s.display = s.display.slice(0, -1);
     else s.display = '0';
-    renderCalc();
-    return;
+    renderCalc(); return;
   }
-  if (fn === 'percent') {
-    s.display = String(parseFloat((num / 100).toPrecision(12)));
-    renderCalc();
-    return;
-  }
+  if (fn === 'percent') { s.display = String(parseFloat((num / 100).toPrecision(12))); renderCalc(); return; }
   if (fn === 'sqrt') {
     if (num < 0) { s.display = 'Error'; renderCalc(); return; }
     const res = Math.sqrt(num);
-    document.getElementById('calcHistory').textContent = `√(${num}) = ${formatCalcNum(res)}`;
-    s.expression = '';
-    s.display = String(parseFloat(res.toPrecision(12)));
-    s.justEvaled = true;
-    renderCalc();
-    return;
+    document.getElementById('calcHistory').textContent = `\u221a(${num}) = ${formatCalcNum(res)}`;
+    s.expression = ''; s.display = String(parseFloat(res.toPrecision(12))); s.justEvaled = true;
+    renderCalc(); return;
   }
   if (fn === 'square') {
     const res = num * num;
-    document.getElementById('calcHistory').textContent = `(${num})² = ${formatCalcNum(res)}`;
-    s.expression = '';
-    s.display = String(parseFloat(res.toPrecision(12)));
-    s.justEvaled = true;
-    renderCalc();
-    return;
+    document.getElementById('calcHistory').textContent = `(${num})\u00b2 = ${formatCalcNum(res)}`;
+    s.expression = ''; s.display = String(parseFloat(res.toPrecision(12))); s.justEvaled = true;
+    renderCalc(); return;
   }
-  if (fn === 'sin') { evalTrig('sin', num); return; }
-  if (fn === 'cos') { evalTrig('cos', num); return; }
-  if (fn === 'tan') { evalTrig('tan', num); return; }
+  if (fn === 'sin') { calcTrig('sin', num); return; }
+  if (fn === 'cos') { calcTrig('cos', num); return; }
+  if (fn === 'tan') { calcTrig('tan', num); return; }
   if (fn === 'equals') {
-    // Build full expression
-    let ops = ['+', '-', '*', '/'];
+    const ops = ['+', '-', '*', '/'];
     let expr = s.expression;
     if (!ops.includes(expr.slice(-1))) {
-      // expression already complete or empty
       expr += (s.display !== '0' || !s.expression) ? (s.expression ? '' : s.display) : '';
-    } else {
-      expr += s.display;
-    }
-    if (!expr) { expr = s.display; }
+    } else { expr += s.display; }
+    if (!expr) expr = s.display;
     try {
-      // safe eval using Function
       const raw = new Function('return ' + expr)();
       const result = parseFloat(raw.toPrecision(12));
       document.getElementById('calcHistory').textContent = `${expr} = ${formatCalcNum(result)}`;
       s.expression = '';
       s.display = isFinite(result) ? String(result) : 'Error';
       s.justEvaled = true;
-    } catch {
-      s.display = 'Error';
-    }
+    } catch { s.display = 'Error'; }
     renderCalc();
   }
 }
 
-function evalTrig(fn, deg) {
+function calcTrig(fn, deg) {
   const s = calcState;
   const rad = deg * Math.PI / 180;
   const map = { sin: Math.sin, cos: Math.cos, tan: Math.tan };
   let res = map[fn](rad);
-  // Round near-zero
   if (Math.abs(res) < 1e-10) res = 0;
   res = parseFloat(res.toPrecision(10));
-  document.getElementById('calcHistory').textContent = `${fn}(${deg}°) = ${formatCalcNum(res)}`;
-  s.expression = '';
-  s.display = String(res);
-  s.justEvaled = true;
+  document.getElementById('calcHistory').textContent = `${fn}(${deg}\u00b0) = ${formatCalcNum(res)}`;
+  s.expression = ''; s.display = String(res); s.justEvaled = true;
   renderCalc();
 }
 
@@ -150,12 +114,9 @@ function renderCalc() {
   const s = calcState;
   const exprEl = document.getElementById('calcExpression');
   const resEl  = document.getElementById('calcResult');
-
-  // Build readable expression preview
-  const ops = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+  const ops = { '+': '+', '-': '\u2212', '*': '\u00d7', '/': '\u00f7' };
   const prettyExpr = s.expression.replace(/[+\-*/]/g, m => ` ${ops[m] || m} `);
   exprEl.textContent = prettyExpr || '\u00a0';
-
   resEl.textContent = s.display === 'Error' ? 'Error' : formatCalcNum(parseFloat(s.display)) || s.display;
   resEl.className = 'calc-result' + (s.display.length > 10 ? ' small' : '');
   if (s.justEvaled) {
@@ -164,20 +125,439 @@ function renderCalc() {
   }
 }
 
-// Keyboard support for calculator
+// Keyboard for standard calc
 document.addEventListener('keydown', e => {
-  const panel = document.getElementById('panel-calc');
-  if (panel.classList.contains('hidden')) return;
-  if ('0123456789'.includes(e.key)) { calcInput(e.key); return; }
-  if (['+', '-', '*', '/'].includes(e.key)) { calcInput(e.key); return; }
-  if (e.key === '.') { calcInput('.'); return; }
-  if (e.key === 'Enter' || e.key === '=') { calcFn('equals'); return; }
-  if (e.key === 'Backspace') { calcFn('backspace'); return; }
-  if (e.key === 'Escape') { calcFn('clear'); return; }
-  if (e.key === '%') { calcFn('percent'); return; }
+  const activeTab = document.querySelector('.app-tab.active')?.id;
+  if (activeTab === 'tab-calc') {
+    if ('0123456789'.includes(e.key)) { calcInput(e.key); return; }
+    if (['+', '-', '*', '/'].includes(e.key)) { calcInput(e.key); return; }
+    if (e.key === '.') { calcInput('.'); return; }
+    if (e.key === 'Enter' || e.key === '=') { calcFn('equals'); return; }
+    if (e.key === 'Backspace') { calcFn('backspace'); return; }
+    if (e.key === 'Escape') { calcFn('clear'); return; }
+    if (e.key === '%') { calcFn('percent'); return; }
+  }
 });
 
-/* ===== UNIT CONVERTER ===== */
+/* ============================================================
+   SCIENTIFIC CALCULATOR
+   ============================================================ */
+let sciState = {
+  expression: '',    // raw expression string
+  display: '0',
+  justEvaled: false,
+  angleMode: 'deg', // 'deg' or 'rad'
+  memory: 0,
+  hasMemory: false,
+  openParens: 0
+};
+
+function setAngleMode(mode) {
+  sciState.angleMode = mode;
+  document.getElementById('degBtn').classList.toggle('active', mode === 'deg');
+  document.getElementById('radBtn').classList.toggle('active', mode === 'rad');
+}
+
+function sciMemory(action) {
+  const s = sciState;
+  const val = parseFloat(s.display) || 0;
+  if (action === 'mc') { s.memory = 0; s.hasMemory = false; }
+  else if (action === 'mr') {
+    s.display = String(s.memory); s.justEvaled = true;
+  }
+  else if (action === 'mplus') { s.memory += val; s.hasMemory = true; }
+  else if (action === 'mminus') { s.memory -= val; s.hasMemory = true; }
+  const ind = document.getElementById('memIndicator');
+  ind.style.display = s.hasMemory ? 'inline-block' : 'none';
+  renderSci();
+}
+
+function sciInput(val) {
+  const s = sciState;
+  const ops = ['+', '-', '*', '/', '^'];
+
+  if (s.justEvaled) {
+    if (!ops.includes(val) && val !== '(' && val !== ')') { s.expression = ''; s.display = '0'; }
+    else if (ops.includes(val)) { s.expression = s.display; s.display = '0'; }
+    s.justEvaled = false;
+  }
+
+  if (val === '(') {
+    s.expression += '(';
+    s.openParens++;
+    s.display = '0';
+  } else if (val === ')') {
+    if (s.openParens > 0) {
+      if (!ops.includes(s.expression.slice(-1))) s.expression += s.display;
+      s.expression += ')';
+      s.openParens--;
+      s.display = '0';
+    }
+  } else if (val === '^') {
+    if (!ops.includes(s.expression.slice(-1))) s.expression += s.display;
+    s.expression += '**';
+    s.display = '0';
+  } else if (ops.includes(val)) {
+    const lastIsOp = s.expression && ops.map(o => o === '^' ? '**' : o).some(o => s.expression.endsWith(o));
+    if (!lastIsOp) s.expression += s.display;
+    else s.expression = s.expression.slice(0, -1);
+    s.expression += val;
+    s.display = '0';
+  } else if (val === 'E') {
+    // Scientific notation input
+    if (!s.display.includes('e')) s.display += 'e+';
+  } else if (val === '.') {
+    if (!s.display.includes('.')) s.display += '.';
+  } else {
+    if (s.display === '0') s.display = val;
+    else s.display += val;
+  }
+  renderSci();
+}
+
+function sciFn(fn) {
+  const s = sciState;
+  const num = parseFloat(s.display);
+  const toRad = (x) => s.angleMode === 'deg' ? x * Math.PI / 180 : x;
+  const fromRad = (x) => s.angleMode === 'deg' ? x * 180 / Math.PI : x;
+
+  const pushHistory = (label, result) => {
+    document.getElementById('sciHistory').textContent = `${label} = ${formatSciNum(result)}`;
+    s.expression = ''; s.display = isFinite(result) ? String(parseFloat(result.toPrecision(12))) : 'Error';
+    s.justEvaled = true; renderSci();
+  };
+
+  if (fn === 'clear') {
+    s.expression = ''; s.display = '0'; s.justEvaled = false; s.openParens = 0;
+    document.getElementById('sciHistory').textContent = '';
+    renderSci(); return;
+  }
+  if (fn === 'backspace') {
+    if (s.justEvaled) { s.expression = ''; s.display = '0'; s.justEvaled = false; }
+    else if (s.display.length > 1) s.display = s.display.slice(0, -1);
+    else s.display = '0';
+    renderSci(); return;
+  }
+  if (fn === 'negate') { s.display = String(-num); renderSci(); return; }
+  if (fn === 'percent') { s.display = String(parseFloat((num / 100).toPrecision(12))); renderSci(); return; }
+
+  // Constants
+  if (fn === 'pi') { s.display = String(Math.PI); s.justEvaled = true; renderSci(); return; }
+  if (fn === 'e_const') { s.display = String(Math.E); s.justEvaled = true; renderSci(); return; }
+  if (fn === 'phi') { s.display = String((1 + Math.sqrt(5)) / 2); s.justEvaled = true; renderSci(); return; }
+
+  // Single-arg functions
+  if (fn === 'sqrt') { if (num < 0) { s.display = 'Error'; renderSci(); return; } pushHistory(`\u221a(${num})`, Math.sqrt(num)); return; }
+  if (fn === 'cbrt') { pushHistory(`\u221b(${num})`, Math.cbrt(num)); return; }
+  if (fn === 'square') { pushHistory(`(${num})\u00b2`, num * num); return; }
+  if (fn === 'cube') { pushHistory(`(${num})\u00b3`, num ** 3); return; }
+  if (fn === 'reciprocal') { if (num === 0) { s.display = 'Error'; renderSci(); return; } pushHistory(`1/(${num})`, 1 / num); return; }
+  if (fn === 'log') { if (num <= 0) { s.display = 'Error'; renderSci(); return; } pushHistory(`log(${num})`, Math.log10(num)); return; }
+  if (fn === 'ln') { if (num <= 0) { s.display = 'Error'; renderSci(); return; } pushHistory(`ln(${num})`, Math.log(num)); return; }
+  if (fn === 'log2') { if (num <= 0) { s.display = 'Error'; renderSci(); return; } pushHistory(`log\u2082(${num})`, Math.log2(num)); return; }
+  if (fn === 'exp') { pushHistory(`e^(${num})`, Math.exp(num)); return; }
+  if (fn === 'pow10') { pushHistory(`10^(${num})`, Math.pow(10, num)); return; }
+  if (fn === 'abs') { pushHistory(`|${num}|`, Math.abs(num)); return; }
+  if (fn === 'factorial') {
+    if (num < 0 || !Number.isInteger(num) || num > 170) { s.display = 'Error'; renderSci(); return; }
+    let result = 1;
+    for (let i = 2; i <= num; i++) result *= i;
+    pushHistory(`${num}!`, result); return;
+  }
+
+  // Trig
+  if (fn === 'sin') { let r = Math.sin(toRad(num)); if (Math.abs(r) < 1e-10) r = 0; pushHistory(`sin(${num}${s.angleMode === 'deg' ? '\u00b0' : 'rad'})`, r); return; }
+  if (fn === 'cos') { let r = Math.cos(toRad(num)); if (Math.abs(r) < 1e-10) r = 0; pushHistory(`cos(${num}${s.angleMode === 'deg' ? '\u00b0' : 'rad'})`, r); return; }
+  if (fn === 'tan') {
+    const a = toRad(num) % Math.PI;
+    if (Math.abs(a - Math.PI / 2) < 1e-10) { s.display = 'Error'; renderSci(); return; }
+    let r = Math.tan(toRad(num)); if (Math.abs(r) < 1e-10) r = 0;
+    pushHistory(`tan(${num}${s.angleMode === 'deg' ? '\u00b0' : 'rad'})`, r); return;
+  }
+  if (fn === 'asin') { if (num < -1 || num > 1) { s.display = 'Error'; renderSci(); return; } pushHistory(`sin\u207b\u00b9(${num})`, fromRad(Math.asin(num))); return; }
+  if (fn === 'acos') { if (num < -1 || num > 1) { s.display = 'Error'; renderSci(); return; } pushHistory(`cos\u207b\u00b9(${num})`, fromRad(Math.acos(num))); return; }
+  if (fn === 'atan') { pushHistory(`tan\u207b\u00b9(${num})`, fromRad(Math.atan(num))); return; }
+
+  // Hyperbolic
+  if (fn === 'sinh') { pushHistory(`sinh(${num})`, Math.sinh(num)); return; }
+  if (fn === 'cosh') { pushHistory(`cosh(${num})`, Math.cosh(num)); return; }
+  if (fn === 'tanh') { pushHistory(`tanh(${num})`, Math.tanh(num)); return; }
+
+  if (fn === 'equals') {
+    let expr = s.expression;
+    // Close any open parens
+    for (let i = 0; i < s.openParens; i++) expr += ')';
+    const lastIsOp = expr && ['+', '-', '*', '/', '**'].some(o => expr.endsWith(o));
+    if (!lastIsOp) expr += s.display;
+    if (!expr) expr = s.display;
+    try {
+      const result = new Function('return ' + expr)();
+      const final = parseFloat(Number(result).toPrecision(12));
+      document.getElementById('sciHistory').textContent = `${expr} = ${formatSciNum(final)}`;
+      s.expression = ''; s.openParens = 0;
+      s.display = isFinite(final) ? String(final) : 'Error';
+      s.justEvaled = true;
+    } catch { s.display = 'Error'; }
+    renderSci();
+  }
+}
+
+function formatSciNum(n) {
+  if (!isFinite(n)) return 'Error';
+  if (Math.abs(n) >= 1e15 || (Math.abs(n) < 1e-9 && n !== 0)) return n.toExponential(6);
+  return parseFloat(n.toPrecision(12)).toLocaleString('en-US', { maximumFractionDigits: 12 });
+}
+
+function renderSci() {
+  const s = sciState;
+  const exprEl = document.getElementById('sciExpression');
+  const resEl  = document.getElementById('sciResult');
+  const ops = { '+': '+', '-': '\u2212', '*': '\u00d7', '/': '\u00f7', '**': '^' };
+  let prettyExpr = s.expression
+    .replace(/\*\*/g, '^')
+    .replace(/[+\-*/]/g, m => ` ${ops[m] || m} `);
+  exprEl.textContent = prettyExpr || '\u00a0';
+  const numVal = parseFloat(s.display);
+  resEl.textContent = s.display === 'Error' ? 'Error' : (isNaN(numVal) ? s.display : formatSciNum(numVal));
+  resEl.className = 'calc-result' + (s.display.length > 12 ? ' small' : '');
+  if (s.justEvaled) {
+    resEl.classList.add('flash');
+    setTimeout(() => resEl.classList.remove('flash'), 300);
+  }
+}
+
+/* ============================================================
+   PROGRAMMER CALCULATOR
+   ============================================================ */
+let progState = {
+  currentBase: 'DEC',
+  bitWidth: 'QWORD',   // BYTE=8, WORD=16, DWORD=32, QWORD=64
+  value: 0n,           // BigInt
+  expression: '',
+  pendingOp: null,
+  firstOperand: null,
+  justEvaled: false,
+  startNew: false,     // true after operator is set — next digit starts fresh
+  openParens: 0
+};
+
+const BIT_WIDTHS = { BYTE: 8, WORD: 16, DWORD: 32, QWORD: 64 };
+const BIT_MASKS = {
+  BYTE: (1n << 8n) - 1n,
+  WORD: (1n << 16n) - 1n,
+  DWORD: (1n << 32n) - 1n,
+  QWORD: (1n << 64n) - 1n
+};
+
+function setProgBase(base) {
+  progState.currentBase = base;
+  document.querySelectorAll('.base-row').forEach(r => r.classList.remove('active'));
+  document.getElementById('base-row-' + base).classList.add('active');
+  updateHexButtons();
+  renderProgCalc();
+}
+
+function setBitWidth(width) {
+  progState.bitWidth = width;
+  progState.value &= BIT_MASKS[width];
+  document.querySelectorAll('.bit-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('bw-' + width).classList.add('active');
+  renderProgCalc();
+}
+
+function updateHexButtons() {
+  const base = progState.currentBase;
+  const hexDigits = ['A', 'B', 'C', 'D', 'E', 'F'];
+  hexDigits.forEach(d => {
+    const btn = document.getElementById('prog-' + d);
+    if (btn) btn.disabled = (base !== 'HEX');
+  });
+  // 8 and 9 only valid in DEC and OCT
+  const dotBtn = document.getElementById('prog-dot');
+  if (dotBtn) dotBtn.disabled = (base !== 'DEC');
+}
+
+function clampBigInt(val, width) {
+  const mask = BIT_MASKS[width];
+  return ((val % (mask + 1n)) + (mask + 1n)) % (mask + 1n);
+}
+
+function progInput(val) {
+  const s = progState;
+  const base = s.currentBase;
+  const baseMap = { HEX: 16, DEC: 10, OCT: 8, BIN: 2 };
+
+  // Validate digit for current base
+  const validHex = '0123456789ABCDEF';
+  const validMap = { HEX: validHex, DEC: '0123456789', OCT: '01234567', BIN: '01' };
+  if (!'+-*/'.includes(val) && val !== '.' && !validMap[base].includes(val.toUpperCase())) return;
+
+  if (val === '.' && base !== 'DEC') return;
+
+  if (s.justEvaled) {
+    s.value = 0n; s.expression = '';
+    s.justEvaled = false; s.startNew = false;
+  }
+
+  if (!'+-*/'.includes(val)) {
+    // digit input — build a string, then parse to BigInt
+    let current;
+    if (s.startNew) {
+      // Fresh input after an operator
+      current = val.toUpperCase();
+      s.startNew = false;
+    } else {
+      current = s.value.toString(baseMap[base]).toUpperCase();
+      if (current === '0') current = val.toUpperCase();
+      else current += val.toUpperCase();
+    }
+    const parsed = parseInt(current, baseMap[base]);
+    if (isNaN(parsed)) return;
+    try { s.value = BigInt(parsed); } catch { return; }
+  } else {
+    if (s.pendingOp) progApplyOp();
+    s.firstOperand = s.value;
+    s.pendingOp = val;
+    s.startNew = true;  // next digit input starts a new number
+  }
+  s.value = clampBigInt(s.value, s.bitWidth);
+  renderProgCalc();
+}
+
+function progApplyOp() {
+  const s = progState;
+  if (s.pendingOp === null || s.firstOperand === null) return;
+  try {
+    switch (s.pendingOp) {
+      case '+': s.value = s.firstOperand + s.value; break;
+      case '-': s.value = s.firstOperand - s.value; break;
+      case '*': s.value = s.firstOperand * s.value; break;
+      case '/': s.value = s.value !== 0n ? s.firstOperand / s.value : 0n; break;
+      case 'AND': s.value = s.firstOperand & s.value; break;
+      case 'OR': s.value = s.firstOperand | s.value; break;
+      case 'XOR': s.value = s.firstOperand ^ s.value; break;
+      case 'LSHIFT': s.value = s.firstOperand << s.value; break;
+      case 'RSHIFT': s.value = s.firstOperand >> s.value; break;
+      case 'MOD': s.value = s.value !== 0n ? s.firstOperand % s.value : 0n; break;
+    }
+    s.value = clampBigInt(s.value, s.bitWidth);
+  } catch { s.value = 0n; }
+  s.pendingOp = null;
+  s.firstOperand = null;
+}
+
+function progOp(op) {
+  const s = progState;
+  if (s.justEvaled) s.justEvaled = false;
+
+  if (op === 'NOT') {
+    const mask = BIT_MASKS[s.bitWidth];
+    s.value = (~s.value) & mask;
+    document.getElementById('progHistory').textContent = `NOT = ${s.value.toString()}`;
+    renderProgCalc(); return;
+  }
+  if (s.pendingOp && !s.startNew) progApplyOp();
+  s.firstOperand = s.value;
+  s.pendingOp = op;
+  s.startNew = true;  // next digit starts a new number
+  renderProgCalc();
+}
+
+function progFn(fn) {
+  const s = progState;
+  if (fn === 'clear') {
+    s.value = 0n; s.pendingOp = null; s.firstOperand = null;
+    s.justEvaled = false; s.startNew = false; s.expression = '';
+    document.getElementById('progHistory').textContent = '';
+    renderProgCalc(); return;
+  }
+  if (fn === 'backspace') {
+    if (s.justEvaled || s.startNew) { s.value = 0n; s.justEvaled = false; s.startNew = false; }
+    else {
+      const base = { HEX: 16, DEC: 10, OCT: 8, BIN: 2 }[s.currentBase];
+      let str = s.value.toString(base).toUpperCase();
+      str = str.slice(0, -1) || '0';
+      try { s.value = BigInt(parseInt(str, base)); } catch { s.value = 0n; }
+    }
+    renderProgCalc(); return;
+  }
+  if (fn === 'negate') {
+    s.value = clampBigInt(-s.value, s.bitWidth);
+    renderProgCalc(); return;
+  }
+  if (fn === 'flip') {
+    // Byte-reverse (endian flip)
+    const width = BIT_WIDTHS[s.bitWidth];
+    const bytes = [];
+    let v = s.value;
+    for (let i = 0; i < width / 8; i++) { bytes.push(v & 0xFFn); v >>= 8n; }
+    bytes.reverse();
+    s.value = bytes.reduce((acc, b) => (acc << 8n) | b, 0n);
+    renderProgCalc(); return;
+  }
+  if (fn === 'paren') {
+    // Toggle paren
+    renderProgCalc(); return;
+  }
+  if (fn === 'equals') {
+    if (s.pendingOp) {
+      const opLabel = s.pendingOp;
+      const firstVal = s.firstOperand;
+      progApplyOp();
+      document.getElementById('progHistory').textContent =
+        `${firstVal} ${opLabel} ${s.value.toString()}`;
+    }
+    s.justEvaled = true; s.startNew = false;
+    renderProgCalc();
+  }
+}
+
+function toggleBit(index) {
+  const s = progState;
+  s.value ^= (1n << BigInt(index));
+  s.value = clampBigInt(s.value, s.bitWidth);
+  renderProgCalc();
+}
+
+function renderProgCalc() {
+  const s = progState;
+  const v = clampBigInt(s.value, s.bitWidth);
+
+  // Multi-base display
+  document.getElementById('hexValue').textContent = v.toString(16).toUpperCase() || '0';
+  document.getElementById('decValue').textContent = v.toString(10);
+  document.getElementById('octValue').textContent = v.toString(8);
+  document.getElementById('binValue').textContent = v.toString(2);
+
+  // Bit grid
+  const grid = document.getElementById('bitGrid');
+  const bits = BIT_WIDTHS[s.bitWidth];
+  const binStr = v.toString(2).padStart(bits, '0');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${Math.min(bits, 16)}, 1fr)`;
+
+  for (let i = bits - 1; i >= 0; i--) {
+    const bitVal = binStr[bits - 1 - i] === '1';
+    const cell = document.createElement('button');
+    cell.className = 'bit-cell' + (bitVal ? ' bit-on' : '');
+    cell.textContent = bitVal ? '1' : '0';
+    cell.title = `Bit ${i}`;
+    cell.onclick = () => toggleBit(i);
+    grid.appendChild(cell);
+  }
+
+  // Disable unavailable buttons per base
+  updateHexButtons();
+  const base = s.currentBase;
+  const prog8 = document.getElementById('prog-8');
+  const prog9 = document.getElementById('prog-9');
+  if (prog8) prog8.disabled = (base === 'BIN');
+  if (prog9) prog9.disabled = (base === 'BIN' || base === 'OCT' ? base === 'BIN' : false);
+}
+
+/* ============================================================
+   UNIT CONVERTER
+   ============================================================ */
 const units = {
   Length: {
     icon: "fa-ruler", color: "#6c63ff",
@@ -306,7 +686,7 @@ function convertFuel(value, from, to) {
 }
 
 function formatNum(n) {
-  if (n === null || isNaN(n)) return "—";
+  if (n === null || isNaN(n)) return "\u2014";
   if (Math.abs(n) >= 1e9 || (Math.abs(n) < 1e-4 && n !== 0)) return n.toExponential(4);
   return parseFloat(n.toPrecision(8)).toLocaleString("en-US", { maximumFractionDigits: 8 });
 }
@@ -321,7 +701,7 @@ function convert() {
   const fmEl = document.getElementById("resultFormula");
 
   if (isNaN(val)) {
-    outEl.textContent = "—";
+    outEl.textContent = "\u2014";
     eqEl.textContent = "Enter a value to convert";
     fmEl.textContent = "";
     updateQuickRef(from, to, null);
@@ -340,7 +720,7 @@ function convert() {
 
   outEl.textContent = fmtRes;
   eqEl.innerHTML = `<span style="color:#c4b5fd">${fmtVal} ${fromLabel}</span> = <span style="color:#6ee7b7">${fmtRes} ${toLabel}</span>`;
-  fmEl.textContent = from === to ? "Same unit — no conversion needed" : `Converting ${fromLabel} → ${toLabel}`;
+  fmEl.textContent = from === to ? "Same unit \u2014 no conversion needed" : `Converting ${fromLabel} \u2192 ${toLabel}`;
   updateQuickRef(from, to, val);
 }
 
@@ -349,7 +729,6 @@ function updateQuickRef(from, to, val) {
   const qr = document.getElementById("quickRef");
   const allUnits = Object.keys(units[cat].units);
   if (!val || isNaN(val) || allUnits.length <= 2) { qr.innerHTML = ""; return; }
-
   const refs = allUnits.filter(u => u !== from).slice(0, 6);
   qr.innerHTML = refs.map(u => {
     let res;
@@ -365,25 +744,23 @@ function swapUnits() {
   const t = document.getElementById("toUnit");
   const outVal = document.getElementById("outputValue").textContent;
   [f.value, t.value] = [t.value, f.value];
-  if (outVal !== "—") document.getElementById("inputValue").value = parseFloat(outVal.replace(/,/g,"")) || "";
+  if (outVal !== "\u2014") document.getElementById("inputValue").value = parseFloat(outVal.replace(/,/g,"")) || "";
   convert();
 }
 
 function setCategory(cat) {
   activeCategory = cat;
   document.querySelectorAll(".pill").forEach(p => p.classList.toggle("active", p.dataset.cat === cat));
-
   const data = units[cat];
   document.getElementById("catIcon").innerHTML = `<i class="fa-solid ${data.icon}" style="color:${data.color}"></i>`;
   document.getElementById("catLabel").textContent = cat.replace(/_/g, " ");
-
   const keys = Object.keys(data.units);
   const fromSel = document.getElementById("fromUnit");
   const toSel = document.getElementById("toUnit");
   fromSel.innerHTML = keys.map(k => `<option value="${k}">${k.replace(/_/g," ")}</option>`).join("");
   toSel.innerHTML = keys.map((k,i) => `<option value="${k}" ${i===1?"selected":""}>${k.replace(/_/g," ")}</option>`).join("");
   document.getElementById("inputValue").value = "";
-  document.getElementById("outputValue").textContent = "—";
+  document.getElementById("outputValue").textContent = "\u2014";
   document.getElementById("resultEq").textContent = "Enter a value to convert";
   document.getElementById("resultFormula").textContent = "";
   document.getElementById("quickRef").innerHTML = "";
@@ -423,3 +800,7 @@ function scrollActivePillIntoView() {
 document.getElementById("categoryScroll").addEventListener("scroll", updateArrows);
 setCategory(activeCategory);
 setTimeout(updateArrows, 100);
+
+// Init programmer calculator
+renderProgCalc();
+updateHexButtons();

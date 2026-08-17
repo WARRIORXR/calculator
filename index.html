@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CalcSuite — Calculator & Unit Converter</title>
-  <meta name="description" content="A premium all-in-one calculator suite featuring a standard calculator and a powerful unit converter with 14 categories. Fast, beautiful, and free."/>
-  <meta name="keywords" content="calculator, unit converter, length converter, weight converter, temperature converter, online calculator"/>
+  <title>CalcSuite — Scientific Calculator &amp; Unit Converter</title>
+  <meta name="description" content="A premium all-in-one calculator suite featuring standard, scientific, programmer calculators and a powerful unit converter. Fast, beautiful, and free."/>
+  <meta name="keywords" content="scientific calculator, programmer calculator, unit converter, trigonometry, logarithm, bitwise calculator"/>
   <meta name="author" content="WARRIORXR"/>
-  <meta property="og:title" content="CalcSuite — Calculator & Unit Converter"/>
-  <meta property="og:description" content="Premium all-in-one calculator with standard calculator and 14-category unit converter."/>
+  <meta property="og:title" content="CalcSuite — Scientific Calculator &amp; Unit Converter"/>
+  <meta property="og:description" content="Premium all-in-one calculator suite with scientific, programmer modes and unit converter."/>
   <meta property="og:type" content="website"/>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -32,63 +32,222 @@
     <!-- App Tabs -->
     <div class="app-tabs">
       <button class="app-tab active" id="tab-calc" onclick="switchTab('calc')">
-        <i class="fa-solid fa-calculator"></i> Calculator
+        <i class="fa-solid fa-calculator"></i> Standard
+      </button>
+      <button class="app-tab" id="tab-sci" onclick="switchTab('sci')">
+        <i class="fa-solid fa-atom"></i> Scientific
+      </button>
+      <button class="app-tab" id="tab-prog" onclick="switchTab('prog')">
+        <i class="fa-solid fa-code"></i> Programmer
       </button>
       <button class="app-tab" id="tab-converter" onclick="switchTab('converter')">
-        <i class="fa-solid fa-arrows-rotate"></i> Unit Converter
+        <i class="fa-solid fa-arrows-rotate"></i> Converter
       </button>
     </div>
 
-    <!-- ===== CALCULATOR PANEL ===== -->
+    <!-- ===== STANDARD CALCULATOR PANEL ===== -->
     <div class="panel" id="panel-calc">
       <div class="calc-wrapper">
-        <!-- History -->
         <div class="calc-history" id="calcHistory"></div>
-        <!-- Display -->
         <div class="calc-display">
           <div class="calc-expression" id="calcExpression">&nbsp;</div>
           <div class="calc-result" id="calcResult">0</div>
         </div>
-        <!-- Buttons -->
         <div class="calc-grid">
-          <!-- Row 1 -->
-          <button class="calc-btn fn-btn" onclick="calcFn('sqrt')" title="Square Root">√</button>
-          <button class="calc-btn fn-btn" onclick="calcFn('square')" title="Square">x²</button>
+          <button class="calc-btn fn-btn" onclick="calcFn('sqrt')" title="Square Root">&#8730;</button>
+          <button class="calc-btn fn-btn" onclick="calcFn('square')" title="Square">x&sup2;</button>
           <button class="calc-btn fn-btn" onclick="calcFn('percent')" title="Percent">%</button>
           <button class="calc-btn op-btn danger-btn" onclick="calcFn('clear')" title="Clear All">AC</button>
-          <!-- Row 2 -->
-          <button class="calc-btn fn-btn" onclick="calcFn('sin')" title="Sine">sin</button>
-          <button class="calc-btn fn-btn" onclick="calcFn('cos')" title="Cosine">cos</button>
-          <button class="calc-btn fn-btn" onclick="calcFn('tan')" title="Tangent">tan</button>
+          <button class="calc-btn fn-btn" onclick="calcFn('sin')" title="Sine (degrees)">sin</button>
+          <button class="calc-btn fn-btn" onclick="calcFn('cos')" title="Cosine (degrees)">cos</button>
+          <button class="calc-btn fn-btn" onclick="calcFn('tan')" title="Tangent (degrees)">tan</button>
           <button class="calc-btn op-btn" onclick="calcFn('backspace')" title="Backspace"><i class="fa-solid fa-delete-left"></i></button>
-          <!-- Row 3 -->
           <button class="calc-btn num-btn" onclick="calcInput('7')">7</button>
           <button class="calc-btn num-btn" onclick="calcInput('8')">8</button>
           <button class="calc-btn num-btn" onclick="calcInput('9')">9</button>
-          <button class="calc-btn op-btn" onclick="calcInput('/')">÷</button>
-          <!-- Row 4 -->
+          <button class="calc-btn op-btn" onclick="calcInput('/')">&#247;</button>
           <button class="calc-btn num-btn" onclick="calcInput('4')">4</button>
           <button class="calc-btn num-btn" onclick="calcInput('5')">5</button>
           <button class="calc-btn num-btn" onclick="calcInput('6')">6</button>
-          <button class="calc-btn op-btn" onclick="calcInput('*')">×</button>
-          <!-- Row 5 -->
+          <button class="calc-btn op-btn" onclick="calcInput('*')">&#215;</button>
           <button class="calc-btn num-btn" onclick="calcInput('1')">1</button>
           <button class="calc-btn num-btn" onclick="calcInput('2')">2</button>
           <button class="calc-btn num-btn" onclick="calcInput('3')">3</button>
-          <button class="calc-btn op-btn" onclick="calcInput('-')">−</button>
-          <!-- Row 6 -->
+          <button class="calc-btn op-btn" onclick="calcInput('-')">&#8722;</button>
           <button class="calc-btn num-btn span2" onclick="calcInput('0')">0</button>
           <button class="calc-btn num-btn" onclick="calcInput('.')">.</button>
           <button class="calc-btn op-btn" onclick="calcInput('+')">+</button>
-          <!-- Row 7 -->
           <button class="calc-btn eq-btn span4" onclick="calcFn('equals')">=</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCIENTIFIC CALCULATOR PANEL ===== -->
+    <div class="panel hidden" id="panel-sci">
+      <div class="calc-wrapper sci-wrapper">
+        <div class="sci-top-bar">
+          <div class="angle-toggle">
+            <button class="angle-btn active" id="degBtn" onclick="setAngleMode('deg')">DEG</button>
+            <button class="angle-btn" id="radBtn" onclick="setAngleMode('rad')">RAD</button>
+          </div>
+          <div class="memory-bar">
+            <button class="mem-btn" onclick="sciMemory('mc')" title="Memory Clear">MC</button>
+            <button class="mem-btn" onclick="sciMemory('mr')" title="Memory Recall">MR</button>
+            <button class="mem-btn" onclick="sciMemory('mplus')" title="Memory Add">M+</button>
+            <button class="mem-btn" onclick="sciMemory('mminus')" title="Memory Subtract">M&#8722;</button>
+            <span class="mem-indicator" id="memIndicator">M</span>
+          </div>
+        </div>
+        <div class="calc-history" id="sciHistory"></div>
+        <div class="calc-display">
+          <div class="calc-expression" id="sciExpression">&nbsp;</div>
+          <div class="calc-result" id="sciResult">0</div>
+        </div>
+        <div class="sci-grid">
+          <!-- Constants & Parentheses -->
+          <button class="calc-btn fn-btn" onclick="sciFn('pi')" title="Pi">&#960;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('e_const')" title="Euler's number">e</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('phi')" title="Golden Ratio">&#966;</button>
+          <button class="calc-btn fn-btn" onclick="sciInput('(')">(</button>
+          <button class="calc-btn fn-btn" onclick="sciInput(')')">)</button>
+          <!-- Trig -->
+          <button class="calc-btn fn-btn" onclick="sciFn('sin')">sin</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('cos')">cos</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('tan')">tan</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('asin')">sin&#8315;&#185;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('acos')">cos&#8315;&#185;</button>
+          <!-- Hyperbolic + atan -->
+          <button class="calc-btn fn-btn" onclick="sciFn('sinh')">sinh</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('cosh')">cosh</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('tanh')">tanh</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('atan')">tan&#8315;&#185;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('reciprocal')" title="1/x">1/x</button>
+          <!-- Logarithms -->
+          <button class="calc-btn fn-btn" onclick="sciFn('log')">log</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('ln')">ln</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('log2')">log&#8322;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('exp')">e&#739;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('pow10')">10&#739;</button>
+          <!-- Powers & Roots -->
+          <button class="calc-btn fn-btn" onclick="sciFn('sqrt')">&#8730;x</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('cbrt')">&#8731;x</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('square')">x&sup2;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('cube')">x&#179;</button>
+          <button class="calc-btn fn-btn" onclick="sciInput('^')" title="Power (x^y)">x&#696;</button>
+          <!-- Misc -->
+          <button class="calc-btn fn-btn" onclick="sciFn('factorial')">n!</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('abs')">|x|</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('negate')">+/&#8722;</button>
+          <button class="calc-btn fn-btn" onclick="sciFn('percent')">%</button>
+          <button class="calc-btn op-btn danger-btn" onclick="sciFn('clear')">AC</button>
+          <!-- Numbers row 1 -->
+          <button class="calc-btn num-btn" onclick="sciInput('7')">7</button>
+          <button class="calc-btn num-btn" onclick="sciInput('8')">8</button>
+          <button class="calc-btn num-btn" onclick="sciInput('9')">9</button>
+          <button class="calc-btn op-btn" onclick="sciInput('/')">&#247;</button>
+          <button class="calc-btn op-btn" onclick="sciFn('backspace')"><i class="fa-solid fa-delete-left"></i></button>
+          <!-- Numbers row 2 -->
+          <button class="calc-btn num-btn" onclick="sciInput('4')">4</button>
+          <button class="calc-btn num-btn" onclick="sciInput('5')">5</button>
+          <button class="calc-btn num-btn" onclick="sciInput('6')">6</button>
+          <button class="calc-btn op-btn" onclick="sciInput('*')">&#215;</button>
+          <button class="calc-btn op-btn" onclick="sciInput('+')">+</button>
+          <!-- Numbers row 3 -->
+          <button class="calc-btn num-btn" onclick="sciInput('1')">1</button>
+          <button class="calc-btn num-btn" onclick="sciInput('2')">2</button>
+          <button class="calc-btn num-btn" onclick="sciInput('3')">3</button>
+          <button class="calc-btn op-btn" onclick="sciInput('-')">&#8722;</button>
+          <button class="calc-btn eq-btn sci-eq" onclick="sciFn('equals')">=</button>
+          <!-- Numbers row 4 -->
+          <button class="calc-btn num-btn span2" onclick="sciInput('0')">0</button>
+          <button class="calc-btn num-btn" onclick="sciInput('.')">.</button>
+          <button class="calc-btn fn-btn" onclick="sciInput('E')" title="Scientific Notation">EXP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROGRAMMER CALCULATOR PANEL ===== -->
+    <div class="panel hidden" id="panel-prog">
+      <div class="calc-wrapper prog-wrapper">
+        <div class="calc-history" id="progHistory"></div>
+        <!-- Multi-Base Display -->
+        <div class="prog-display">
+          <div class="base-row" id="base-row-HEX" onclick="setProgBase('HEX')">
+            <span class="base-label">HEX</span>
+            <span class="base-value" id="hexValue">0</span>
+          </div>
+          <div class="base-row active" id="base-row-DEC" onclick="setProgBase('DEC')">
+            <span class="base-label">DEC</span>
+            <span class="base-value" id="decValue">0</span>
+          </div>
+          <div class="base-row" id="base-row-OCT" onclick="setProgBase('OCT')">
+            <span class="base-label">OCT</span>
+            <span class="base-value" id="octValue">0</span>
+          </div>
+          <div class="base-row" id="base-row-BIN" onclick="setProgBase('BIN')">
+            <span class="base-label">BIN</span>
+            <span class="base-value" id="binValue">0</span>
+          </div>
+        </div>
+        <!-- Bit Width -->
+        <div class="bit-width-bar">
+          <span class="bit-label">Word:</span>
+          <button class="bit-btn active" id="bw-QWORD" onclick="setBitWidth('QWORD')">64-bit</button>
+          <button class="bit-btn" id="bw-DWORD" onclick="setBitWidth('DWORD')">32-bit</button>
+          <button class="bit-btn" id="bw-WORD" onclick="setBitWidth('WORD')">16-bit</button>
+          <button class="bit-btn" id="bw-BYTE" onclick="setBitWidth('BYTE')">8-bit</button>
+        </div>
+        <!-- Bit Visualization -->
+        <div class="bit-grid-container">
+          <div class="bit-grid" id="bitGrid"></div>
+        </div>
+        <!-- Programmer Buttons -->
+        <div class="prog-grid">
+          <button class="calc-btn fn-btn" onclick="progOp('AND')">AND</button>
+          <button class="calc-btn fn-btn" onclick="progOp('OR')">OR</button>
+          <button class="calc-btn fn-btn" onclick="progOp('XOR')">XOR</button>
+          <button class="calc-btn fn-btn" onclick="progOp('NOT')">NOT</button>
+          <button class="calc-btn op-btn danger-btn" onclick="progFn('clear')">AC</button>
+          <button class="calc-btn op-btn" onclick="progFn('backspace')"><i class="fa-solid fa-delete-left"></i></button>
+
+          <button class="calc-btn fn-btn" onclick="progOp('LSHIFT')">LSH</button>
+          <button class="calc-btn fn-btn" onclick="progOp('RSHIFT')">RSH</button>
+          <button class="calc-btn fn-btn" onclick="progOp('MOD')">MOD</button>
+          <button class="calc-btn fn-btn" onclick="progFn('negate')">+/&#8722;</button>
+          <button class="calc-btn op-btn" onclick="progInput('/')">&#247;</button>
+          <button class="calc-btn op-btn" onclick="progInput('*')">&#215;</button>
+
+          <button class="calc-btn hex-btn" id="prog-A" onclick="progInput('A')">A</button>
+          <button class="calc-btn hex-btn" id="prog-B" onclick="progInput('B')">B</button>
+          <button class="calc-btn hex-btn" id="prog-C" onclick="progInput('C')">C</button>
+          <button class="calc-btn num-btn" onclick="progInput('7')">7</button>
+          <button class="calc-btn num-btn" onclick="progInput('8')">8</button>
+          <button class="calc-btn num-btn" onclick="progInput('9')">9</button>
+
+          <button class="calc-btn hex-btn" id="prog-D" onclick="progInput('D')">D</button>
+          <button class="calc-btn hex-btn" id="prog-E" onclick="progInput('E')">E</button>
+          <button class="calc-btn hex-btn" id="prog-F" onclick="progInput('F')">F</button>
+          <button class="calc-btn num-btn" onclick="progInput('4')">4</button>
+          <button class="calc-btn num-btn" onclick="progInput('5')">5</button>
+          <button class="calc-btn num-btn" onclick="progInput('6')">6</button>
+
+          <button class="calc-btn op-btn" onclick="progInput('-')">&#8722;</button>
+          <button class="calc-btn op-btn" onclick="progInput('+')">+</button>
+          <button class="calc-btn fn-btn" onclick="progFn('paren')" title="Parentheses">(  )</button>
+          <button class="calc-btn num-btn" onclick="progInput('1')">1</button>
+          <button class="calc-btn num-btn" onclick="progInput('2')">2</button>
+          <button class="calc-btn num-btn" onclick="progInput('3')">3</button>
+
+          <button class="calc-btn eq-btn span2" onclick="progFn('equals')">=</button>
+          <button class="calc-btn num-btn span2" onclick="progInput('0')">0</button>
+          <button class="calc-btn num-btn" id="prog-dot" onclick="progInput('.')">.</button>
+          <button class="calc-btn fn-btn" onclick="progFn('flip')">FLIP</button>
         </div>
       </div>
     </div>
 
     <!-- ===== UNIT CONVERTER PANEL ===== -->
     <div class="panel hidden" id="panel-converter">
-      <!-- Category Pills -->
       <div class="category-nav">
         <button class="nav-arrow" id="scrollLeft" onclick="scrollPills(-1)"><i class="fa-solid fa-chevron-left"></i></button>
         <div class="category-scroll" id="categoryScroll">
@@ -96,16 +255,12 @@
         </div>
         <button class="nav-arrow" id="scrollRight" onclick="scrollPills(1)"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
-
-      <!-- Converter Card -->
       <div class="card">
         <div class="card-header">
           <span class="cat-icon" id="catIcon"></span>
           <span class="cat-label" id="catLabel"></span>
         </div>
-
         <div class="converter-grid">
-          <!-- From -->
           <div class="field">
             <label>From</label>
             <div class="select-wrap">
@@ -116,13 +271,9 @@
               <input type="number" id="inputValue" placeholder="0" oninput="convert()" />
             </div>
           </div>
-
-          <!-- Swap -->
           <button class="swap-btn" onclick="swapUnits()" title="Swap">
             <i class="fa-solid fa-arrow-right-arrow-left"></i>
           </button>
-
-          <!-- To -->
           <div class="field">
             <label>To</label>
             <div class="select-wrap">
@@ -130,25 +281,21 @@
               <i class="fa-solid fa-chevron-down chevron"></i>
             </div>
             <div class="input-wrap output-wrap">
-              <span id="outputValue">—</span>
+              <span id="outputValue">&#8212;</span>
             </div>
           </div>
         </div>
-
-        <!-- Result Banner -->
         <div class="result-banner" id="resultBanner">
           <div class="result-eq" id="resultEq">Enter a value to convert</div>
           <div class="result-formula" id="resultFormula"></div>
         </div>
-
-        <!-- Quick Reference -->
         <div class="quick-ref" id="quickRef"></div>
       </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>Built with ❤️ by <a href="https://github.com/WARRIORXR" target="_blank" rel="noopener">WARRIORXR</a></p>
+      <p>Built with &#10084;&#65039; by <a href="https://github.com/WARRIORXR" target="_blank" rel="noopener">WARRIORXR</a></p>
     </footer>
   </div>
 
