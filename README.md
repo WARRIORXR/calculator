@@ -20,7 +20,7 @@
 - Flash animation on result, smooth micro-animations
 - Error handling for invalid inputs
 
-### 🔬 Scientific Calculator *(NEW)*
+### 🔬 Scientific Calculator
 - **Angle mode toggle** — DEG / RAD
 - **Trigonometry** — sin, cos, tan + inverse (sin⁻¹, cos⁻¹, tan⁻¹)
 - **Hyperbolic functions** — sinh, cosh, tanh
@@ -34,7 +34,7 @@
 - **Parentheses** — full `(` `)` support with nesting
 - **Scientific notation** — EXP input for very large/small numbers
 
-### 💻 Programmer Calculator *(NEW)*
+### 💻 Programmer Calculator
 - **Multi-base display** — HEX, DEC, OCT, BIN all live-updating simultaneously
 - **Click to switch base** — tap any base row to make it the active input mode
 - **Word size selector** — 8-bit (BYTE), 16-bit (WORD), 32-bit (DWORD), 64-bit (QWORD)
@@ -78,6 +78,20 @@
 ## 🚀 Live Demo
 
 **[👉 Open CalcSuite](https://calculator-alpha-two-64.vercel.app/)**
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **HTML5** | Semantic structure & accessibility |
+| **CSS3** | Glassmorphism, animations, responsive layout |
+| **JavaScript (ES6+)** | Calculator logic, BigInt for 64-bit programmer mode |
+| **Font Awesome 6** | UI icons |
+| **Google Fonts (Inter)** | Premium typography |
+
+> **Zero dependencies. No build step.** Just open `index.html` in any modern browser.
 
 ---
 
